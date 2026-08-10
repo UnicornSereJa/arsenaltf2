@@ -54,7 +54,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-# База данных (MySQL)
+# ===== ТВОЯ ВЕРСИЯ (MySQL) =====
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -68,9 +68,6 @@ DATABASES = {
         },
     }
 }
-
-# Для работы с JSON полем в MySQL
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},

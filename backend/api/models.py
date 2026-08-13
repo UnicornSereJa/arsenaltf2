@@ -1,5 +1,11 @@
 from django.db import models
+from django.contrib.auth.models import BaseUserManager
 from django.utils import timezone
+
+
+# ============================================================
+# ОСТАЛЬНЫЕ МОДЕЛИ (WeaponClass, WeaponSlot, WeaponReloadType, WeaponCreator)
+# ============================================================
 
 class WeaponClass(models.Model):
     code = models.CharField(max_length=10, primary_key=True, verbose_name="Код")
@@ -55,6 +61,35 @@ class WeaponCreator(models.Model):
         return self.name_ru
 
 
+# ============================================================
+# МЕНЕДЖЕР ПОЛЬЗОВАТЕЛЯ (ИСПРАВЛЕН)
+# ============================================================
+
+class UserManager(BaseUserManager):
+    def get_by_natural_key(self, username):
+        return self.get(login=username)
+
+    def create_user(self, login, email, password=None, **extra_fields):
+        if not login:
+            raise ValueError('Логин обязателен')
+        if not email:
+            raise ValueError('Email обязателен')
+        email = self.normalize_email(email)
+        user = self.model(login=login, email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, login, email, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        return self.create_user(login, email, password, **extra_fields)
+
+
+# ============================================================
+# МОДЕЛЬ ПОЛЬЗОВАТЕЛЯ
+# ============================================================
+
 class User(models.Model):
     id = models.BigAutoField(primary_key=True)
     login = models.CharField(max_length=50, unique=True, verbose_name="Логин")
@@ -62,6 +97,38 @@ class User(models.Model):
     password_hash = models.CharField(max_length=128, verbose_name="Хеш пароля")
     is_blocked = models.BooleanField(default=False, verbose_name="Заблокирован")
     registered_at = models.DateTimeField(default=timezone.now, verbose_name="Дата регистрации")
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=False)
+
+    USERNAME_FIELD = 'login'
+    REQUIRED_FIELDS = ['email']
+
+    objects = UserManager()
+
+    @property
+    def is_anonymous(self):
+        return False
+
+    @property
+    def is_authenticated(self):
+        return True
+
+    def set_password(self, raw_password):
+        from django.contrib.auth.hashers import make_password
+        self.password_hash = make_password(raw_password)
+
+    def check_password(self, raw_password):
+        from django.contrib.auth.hashers import check_password
+        return check_password(raw_password, self.password_hash)
+
+    def has_module_perms(self, app_label):
+        """Проверка прав доступа к модулю"""
+        return self.is_superuser or self.is_staff
+
+    def has_perm(self, perm, obj=None):
+        """Проверка прав доступа к объекту"""
+        return self.is_superuser or self.is_staff
 
     class Meta:
         verbose_name = "Пользователь"
@@ -70,6 +137,9 @@ class User(models.Model):
     def __str__(self):
         return self.login
 
+# ============================================================
+# ОСТАЛЬНЫЕ МОДЕЛИ (Weapon, WeaponClassLink, GameSession, Attempt)
+# ============================================================
 
 class Weapon(models.Model):
     id = models.BigAutoField(primary_key=True)

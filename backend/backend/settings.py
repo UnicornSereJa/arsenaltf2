@@ -110,3 +110,5 @@ SIMPLE_JWT = {
     'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,
 }
+
+AUTH_USER_MODEL = 'api.User'

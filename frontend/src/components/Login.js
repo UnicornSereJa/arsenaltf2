@@ -4,11 +4,11 @@ import { Container, Paper, TextField, Button, Typography, Alert, Box } from '@mu
 import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
-  const [email, setEmail] = useState('');
+  const [login, setLogin] = useState('');       // ← было email, стало login
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login: loginUser } = useAuth();        // ← переименовали, чтобы не конфликтовать
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -17,7 +17,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      await login(email, password);
+      await loginUser(login, password);          // ← передаём login
       navigate('/');
     } catch (err) {
       setError('Неверный логин или пароль');
@@ -42,10 +42,10 @@ const Login = () => {
         <form onSubmit={handleSubmit}>
           <TextField
             fullWidth
-            label="Email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            label="Логин"                         // ← было "Email"
+            type="text"                           // ← было "email"
+            value={login}
+            onChange={(e) => setLogin(e.target.value)}
             margin="normal"
             required
             sx={{ input: { color: '#fff' } }}

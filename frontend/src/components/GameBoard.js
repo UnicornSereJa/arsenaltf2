@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Container, Paper, TextField, Button, Typography,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Box, Alert
+  Box, Alert, Snackbar
 } from '@mui/material';
 import api from '../api/axios';
 
 const GameBoard = () => {
+  const navigate = useNavigate();
   const [session, setSession] = useState(null);
   const [attempts, setAttempts] = useState([]);
   const [remaining, setRemaining] = useState(6);
@@ -15,6 +17,7 @@ const GameBoard = () => {
   const [error, setError] = useState('');
   const [gameOver, setGameOver] = useState(false);
   const [result, setResult] = useState(null);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   const startNewGame = async () => {
     setLoading(true);
@@ -27,6 +30,7 @@ const GameBoard = () => {
       setGameOver(false);
       setResult(null);
       setInput('');
+      setShowLoginPrompt(false);
     } catch (err) {
       setError('Не удалось начать игру');
     } finally {
@@ -52,10 +56,11 @@ const GameBoard = () => {
       if (data.game_over) {
         setGameOver(true);
         setResult(data.result);
-        if (data.result === 'win') {
-          // Победа
-        } else {
-          // Поражение
+        
+        // Если игра завершена и пользователь не авторизован — предложить войти
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+          setShowLoginPrompt(true);
         }
       }
       setInput('');
@@ -68,6 +73,14 @@ const GameBoard = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleLoginRedirect = () => {
+    navigate('/login');
+  };
+
+  const handleClosePrompt = () => {
+    setShowLoginPrompt(false);
   };
 
   useEffect(() => {
@@ -120,6 +133,26 @@ const GameBoard = () => {
             {result === 'win' ? '🎉 Поздравляем! Вы угадали!' : '😔 Попытки закончились. Загадано: ' + (session?.weapon_name || '')}
           </Alert>
         )}
+
+        {/* Предложение войти после игры */}
+        <Snackbar
+          open={showLoginPrompt}
+          autoHideDuration={6000}
+          onClose={handleClosePrompt}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert 
+            severity="info" 
+            onClose={handleClosePrompt}
+            action={
+              <Button color="inherit" size="small" onClick={handleLoginRedirect}>
+                Войти
+              </Button>
+            }
+          >
+            Хотите сохранить результат? Войдите в систему!
+          </Alert>
+        </Snackbar>
 
         <TableContainer component={Paper} sx={{ bgcolor: '#0d0d1a', mb: 3 }}>
           <Table>

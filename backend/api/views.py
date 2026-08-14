@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import *
 from .serializers import *
 from .permissions import IsAdminOrReadOnly
@@ -51,10 +51,14 @@ class WeaponViewSet(viewsets.ModelViewSet):
 class GameSessionViewSet(viewsets.ModelViewSet):
     queryset = GameSession.objects.all()
     serializer_class = GameSessionSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]  # ← разрешаем всем
 
     def get_queryset(self):
-        return self.queryset.filter(user=self.request.user)
+        # Если пользователь авторизован — показываем его сессии
+        if self.request.user.is_authenticated:
+            return self.queryset.filter(user=self.request.user)
+        # Иначе — пустой список (гость не видит чужие сессии)
+        return GameSession.objects.none()
 
     @action(detail=False, methods=['post'])
     def start(self, request):
@@ -65,8 +69,11 @@ class GameSessionViewSet(viewsets.ModelViewSet):
         weapon = random.choice(weapons)
         max_attempts = request.data.get('max_attempts', 6)
 
+        # Если пользователь авторизован — привязываем сессию к нему
+        user = request.user if request.user.is_authenticated else None
+
         session = GameSession.objects.create(
-            user=request.user,
+            user=user,
             weapon=weapon,
             max_attempts=max_attempts,
             status='active'
@@ -77,7 +84,8 @@ class GameSessionViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def guess(self, request, pk=None):
-        session = get_object_or_404(GameSession, pk=pk, user=request.user)
+        # Убираем проверку user=request.user, чтобы гости тоже могли угадывать
+        session = get_object_or_404(GameSession, pk=pk)
 
         if session.status != 'active':
             return Response({'error': 'Session is already finished'}, status=400)

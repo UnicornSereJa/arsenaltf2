@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import PrivateRoute from './components/PrivateRoute';
-import Game from './components/GameBoard';
+import GameBoard from './components/GameBoard';
 import Login from './components/Login';
 import Register from './components/Register';
 import Statistics from './components/Statistics';
@@ -28,14 +28,21 @@ function App() {
       <AuthProvider>
         <BrowserRouter>
           <Routes>
+            {/* Открытые маршруты */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            
+            {/* Главная страница — доступна всем (гостям и авторизованным) */}
+            <Route path="/" element={<GameBoard />} />
+            
+            {/* Защищённые маршруты (только для авторизованных) */}
             <Route element={<PrivateRoute />}>
-              <Route path="/" element={<Game />} />
               <Route path="/statistics" element={<Statistics />} />
               <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="/profile" element={<Profile />} />
             </Route>
+            
+            {/* Админка (только для администраторов) */}
             <Route element={<PrivateRoute allowedRoles={['admin']} />}>
               <Route path="/admin" element={<AdminPanel />} />
             </Route>

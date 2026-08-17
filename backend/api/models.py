@@ -49,9 +49,9 @@ class WeaponReloadType(models.Model):
 
 
 class WeaponCreator(models.Model):
-    code = models.CharField(max_length=20, primary_key=True, verbose_name="Код")
-    name_ru = models.CharField(max_length=50, verbose_name="Название (рус)")
-    name_en = models.CharField(max_length=50, verbose_name="Название (англ)")
+    code = models.CharField(max_length=250, primary_key=True, verbose_name="Код")
+    name_ru = models.CharField(max_length=250, verbose_name="Название (рус)")
+    name_en = models.CharField(max_length=250, verbose_name="Название (англ)")
 
     class Meta:
         verbose_name = "Создатель оружия"
@@ -151,7 +151,9 @@ class Weapon(models.Model):
     year_released = models.IntegerField(verbose_name="Год выхода")
     is_deleted = models.BooleanField(default=False, verbose_name="Удалено")
     classes = models.ManyToManyField(WeaponClass, through='WeaponClassLink', verbose_name="Классы")
-
+    image_url = models.URLField(max_length=500, null=True, blank=True)  # ← 
+    name_ru = models.CharField(max_length=100, null=True, blank=True)   # ← Пнгшки + русификатор
+    reload_type_ru = models.CharField(max_length=50, null=True, blank=True)  # ← 
     class Meta:
         verbose_name = "Оружие"
         verbose_name_plural = "Оружие"
@@ -184,7 +186,7 @@ class GameSession(models.Model):
     ]
 
     id = models.BigAutoField(primary_key=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Пользователь")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Пользователь")
     weapon = models.ForeignKey(Weapon, on_delete=models.PROTECT, verbose_name="Загаданное оружие")
     started_at = models.DateTimeField(default=timezone.now, verbose_name="Время начала")
     finished_at = models.DateTimeField(null=True, blank=True, verbose_name="Время окончания")

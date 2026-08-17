@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
 from .models import *
 
+
 class WeaponClassSerializer(serializers.ModelSerializer):
     class Meta:
         model = WeaponClass
@@ -54,7 +55,8 @@ class WeaponSerializer(serializers.ModelSerializer):
     class Meta:
         model = Weapon
         fields = [
-            'id', 'name', 'slot', 'slot_code', 'reload_type', 'reload_type_code',
+            'id', 'name', 'name_ru', 'image_url',  # ← теперь точно есть
+            'slot', 'slot_code', 'reload_type', 'reload_type_code',
             'creator', 'creator_code', 'magazine_size', 'year_released',
             'is_deleted', 'classes'
         ]
@@ -78,7 +80,6 @@ class WeaponWriteSerializer(serializers.ModelSerializer):
                 weapon_class = WeaponClass.objects.get(code=code)
                 WeaponClassLink.objects.create(weapon=weapon, class_code=weapon_class)
             except WeaponClass.DoesNotExist:
-                # Можно добавить валидацию, но для простоты пропускаем
                 pass
         return weapon
 
@@ -99,6 +100,7 @@ class GameSessionSerializer(serializers.ModelSerializer):
 
 
 class AttemptSerializer(serializers.ModelSerializer):
+    guessed_weapon = WeaponSerializer(read_only=True)
     class Meta:
         model = Attempt
         fields = '__all__'

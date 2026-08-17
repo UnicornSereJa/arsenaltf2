@@ -3,11 +3,24 @@ import { useNavigate } from 'react-router-dom';
 import {
   Container, Paper, TextField, Button, Typography,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Box, Alert, Snackbar
+  Box, Alert, Snackbar, Autocomplete
 } from '@mui/material';
 import api from '../api/axios';
 import Header from './Header';
 import Sidebar from './Sidebar';
+
+// Сопоставление кодов классов с русскими названиями
+const CLASS_NAMES = {
+  'SCOUT': 'Разведчик',
+  'SOLDIER': 'Солдат',
+  'PYRO': 'Поджигатель',
+  'DEMO': 'Подрывник',
+  'HEAVY': 'Пулемётчик',
+  'ENGINEER': 'Инженер',
+  'MEDIC': 'Медик',
+  'SNIPER': 'Снайпер',
+  'SPY': 'Шпион'
+};
 
 const GameBoard = () => {
   const navigate = useNavigate();
@@ -21,6 +34,20 @@ const GameBoard = () => {
   const [gameOver, setGameOver] = useState(false);
   const [result, setResult] = useState(null);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  
+  const [weaponOptions, setWeaponOptions] = useState([]);
+
+  useEffect(() => {
+    const fetchWeapons = async () => {
+      try {
+        const response = await api.get('/weapons/');
+        setWeaponOptions(response.data);
+      } catch (err) {
+        console.error('Ошибка загрузки списка оружий:', err);
+      }
+    };
+    fetchWeapons();
+  }, []);
 
   const startNewGame = async () => {
     setLoading(true);
@@ -106,6 +133,16 @@ const GameBoard = () => {
     return `${comparison.guessed} ${comparison.direction === 'up' ? '↑' : '↓'}`;
   };
 
+  const getWeaponImage = (attempt) => {
+    const guessedWeapon = attempt.guessed_weapon;
+    return guessedWeapon?.image_url || null;
+  };
+
+  const getClassNames = (classCodes) => {
+    if (!classCodes || !Array.isArray(classCodes)) return '';
+    return classCodes.map(code => CLASS_NAMES[code] || code).join(', ');
+  };
+
   return (
     <>
       <Header onMenuClick={() => setSidebarOpen(true)} />
@@ -166,6 +203,7 @@ const GameBoard = () => {
               <TableHead>
                 <TableRow>
                   <TableCell sx={{ color: '#fff' }}>#</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>Картинка</TableCell>
                   <TableCell sx={{ color: '#fff' }}>Класс</TableCell>
                   <TableCell sx={{ color: '#fff' }}>Слот</TableCell>
                   <TableCell sx={{ color: '#fff' }}>Магазин</TableCell>
@@ -175,43 +213,85 @@ const GameBoard = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {attempts.map((attempt) => (
-                  <TableRow key={attempt.id}>
-                    <TableCell sx={{ color: '#fff' }}>{attempt.attempt_no}</TableCell>
-                    <TableCell sx={{ bgcolor: getColor(attempt.comparison_result.class.match), color: '#fff', fontWeight: 'bold' }}>
-                      {attempt.comparison_result.class.guessed.join(', ')}
-                    </TableCell>
-                    <TableCell sx={{ bgcolor: getColor(attempt.comparison_result.slot.match), color: '#fff', fontWeight: 'bold' }}>
-                      {attempt.comparison_result.slot.guessed}
-                    </TableCell>
-                    <TableCell sx={{ bgcolor: getColor(attempt.comparison_result.magazine.match), color: '#fff', fontWeight: 'bold' }}>
-                      {attempt.comparison_result.magazine.guessed ?? '—'}
-                    </TableCell>
-                    <TableCell sx={{ bgcolor: getColor(attempt.comparison_result.reload.match), color: '#fff', fontWeight: 'bold' }}>
-                      {attempt.comparison_result.reload.guessed}
-                    </TableCell>
-                    <TableCell sx={{ bgcolor: getColor(attempt.comparison_result.year.match), color: '#fff', fontWeight: 'bold' }}>
-                      {getYearDisplay(attempt.comparison_result.year)}
-                    </TableCell>
-                    <TableCell sx={{ bgcolor: getColor(attempt.comparison_result.creator.match), color: '#fff', fontWeight: 'bold' }}>
-                      {attempt.comparison_result.creator.guessed}
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {attempts.map((attempt) => {
+                  const imageUrl = getWeaponImage(attempt);
+                  return (
+                    <TableRow key={attempt.id}>
+                      <TableCell sx={{ color: '#fff' }}>{attempt.attempt_no}</TableCell>
+                      <TableCell sx={{ color: '#fff' }}>
+                        {imageUrl ? (
+                          <img 
+                            src={imageUrl} 
+                            alt={attempt.guessed_weapon?.name_ru || attempt.input_text}
+                            style={{ width: '60px', height: 'auto', borderRadius: '4px' }}
+                          />
+                        ) : (
+                          <span style={{ color: '#555' }}>—</span>
+                        )}
+                      </TableCell>
+                      <TableCell sx={{ bgcolor: getColor(attempt.comparison_result.class.match), color: '#fff', fontWeight: 'bold' }}>
+                        {getClassNames(attempt.comparison_result.class.guessed)}
+                      </TableCell>
+                      <TableCell sx={{ bgcolor: getColor(attempt.comparison_result.slot.match), color: '#fff', fontWeight: 'bold' }}>
+                        {attempt.comparison_result.slot.guessed}
+                      </TableCell>
+                      <TableCell sx={{ bgcolor: getColor(attempt.comparison_result.magazine.match), color: '#fff', fontWeight: 'bold' }}>
+                        {attempt.comparison_result.magazine.guessed ?? '—'}
+                      </TableCell>
+                      <TableCell sx={{ bgcolor: getColor(attempt.comparison_result.reload.match), color: '#fff', fontWeight: 'bold' }}>
+                        {attempt.comparison_result.reload.guessed}
+                      </TableCell>
+                      <TableCell sx={{ bgcolor: getColor(attempt.comparison_result.year.match), color: '#fff', fontWeight: 'bold' }}>
+                        {getYearDisplay(attempt.comparison_result.year)}
+                      </TableCell>
+                      <TableCell sx={{ bgcolor: getColor(attempt.comparison_result.creator.match), color: '#fff', fontWeight: 'bold' }}>
+                        {attempt.comparison_result.creator.guessed}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </TableContainer>
 
           <Box display="flex" gap={2}>
-            <TextField
+            <Autocomplete
+              freeSolo
               fullWidth
-              label="Введите название оружия"
-              variant="outlined"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
+              options={weaponOptions}
+              getOptionLabel={(option) => option.name_ru || option.name}
+              isOptionEqualToValue={(option, value) => option.name === value.name}
+              inputValue={input}
+              onInputChange={(event, newValue) => setInput(newValue)}
               onKeyPress={(e) => e.key === 'Enter' && handleGuess()}
               disabled={gameOver || loading}
-              sx={{ bgcolor: '#0d0d1a', input: { color: '#fff' } }}
+              renderOption={(props, option) => (
+                <Box component="li" {...props} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  {option.image_url && (
+                    <img 
+                      src={option.image_url} 
+                      alt={option.name_ru || option.name}
+                      style={{ width: '30px', height: 'auto', borderRadius: '2px' }}
+                    />
+                  )}
+                  <span>{option.name_ru || option.name}</span>
+                </Box>
+              )}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Введите название оружия"
+                  variant="outlined"
+                  disabled={gameOver || loading}
+                  sx={{ bgcolor: '#0d0d1a', input: { color: '#fff' } }}
+                />
+              )}
+              ListboxProps={{
+                style: {
+                  backgroundColor: '#1a1a2e',
+                  color: '#fff'
+                }
+              }}
             />
             <Button
               variant="contained"

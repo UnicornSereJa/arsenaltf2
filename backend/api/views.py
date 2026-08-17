@@ -51,13 +51,11 @@ class WeaponViewSet(viewsets.ModelViewSet):
 class GameSessionViewSet(viewsets.ModelViewSet):
     queryset = GameSession.objects.all()
     serializer_class = GameSessionSerializer
-    permission_classes = [AllowAny]  # ← разрешаем всем
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
-        # Если пользователь авторизован — показываем его сессии
         if self.request.user.is_authenticated:
             return self.queryset.filter(user=self.request.user)
-        # Иначе — пустой список (гость не видит чужие сессии)
         return GameSession.objects.none()
 
     @action(detail=False, methods=['post'])
@@ -69,7 +67,6 @@ class GameSessionViewSet(viewsets.ModelViewSet):
         weapon = random.choice(weapons)
         max_attempts = request.data.get('max_attempts', 6)
 
-        # Если пользователь авторизован — привязываем сессию к нему
         user = request.user if request.user.is_authenticated else None
 
         session = GameSession.objects.create(
@@ -82,10 +79,13 @@ class GameSessionViewSet(viewsets.ModelViewSet):
         serializer = GameSessionSerializer(session)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    @action(detail=True, methods=['post'])
-    def guess(self, request, pk=None):
-        # Убираем проверку user=request.user, чтобы гости тоже могли угадывать
-        session = get_object_or_404(GameSession, pk=pk)
+    @action(detail=True, methods=['post'], url_path='guess', url_name='guess')
+    def make_guess(self, request, pk=None):
+        # Проверяем, что сессия существует и принадлежит пользователю (или гостю)
+        if request.user.is_authenticated:
+            session = get_object_or_404(self.get_queryset(), pk=pk)
+        else:
+            session = get_object_or_404(GameSession, pk=pk, user__isnull=True)
 
         if session.status != 'active':
             return Response({'error': 'Session is already finished'}, status=400)
@@ -97,8 +97,9 @@ class GameSessionViewSet(viewsets.ModelViewSet):
         if not weapon_name:
             return Response({'error': 'weapon_name is required'}, status=400)
 
+        # 🔥 Ищем по русскому названию (name_ru), а если нет — по английскому (name)
         guessed_weapon = Weapon.objects.filter(
-            name__iexact=weapon_name,
+            Q(name_ru__iexact=weapon_name) | Q(name__iexact=weapon_name),
             is_deleted=False
         ).first()
 
@@ -133,6 +134,9 @@ class GameSessionViewSet(viewsets.ModelViewSet):
 
         session.save()
 
+        # 🔥 Добавляем русское название в ответ
+        correct_weapon_name = session.weapon.name_ru or session.weapon.name
+
         response_data = {
             'attempt': AttemptSerializer(attempt).data,
             'comparison': comparison,
@@ -140,7 +144,7 @@ class GameSessionViewSet(viewsets.ModelViewSet):
             'is_correct': is_correct,
             'game_over': session.status == 'finished',
             'result': session.result if session.status == 'finished' else None,
-            'correct_weapon': session.weapon.name if session.status == 'finished' else None
+            'correct_weapon': correct_weapon_name
         }
 
         return Response(response_data)

@@ -6,9 +6,12 @@ import {
   Box, Alert, Snackbar
 } from '@mui/material';
 import api from '../api/axios';
+import Header from './Header';
+import Sidebar from './Sidebar';
 
 const GameBoard = () => {
   const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [session, setSession] = useState(null);
   const [attempts, setAttempts] = useState([]);
   const [remaining, setRemaining] = useState(6);
@@ -32,6 +35,7 @@ const GameBoard = () => {
       setInput('');
       setShowLoginPrompt(false);
     } catch (err) {
+      console.error('Ошибка старта игры:', err);
       setError('Не удалось начать игру');
     } finally {
       setLoading(false);
@@ -57,7 +61,6 @@ const GameBoard = () => {
         setGameOver(true);
         setResult(data.result);
         
-        // Если игра завершена и пользователь не авторизован — предложить войти
         const token = localStorage.getItem('access_token');
         if (!token) {
           setShowLoginPrompt(true);
@@ -68,6 +71,7 @@ const GameBoard = () => {
       if (err.response?.status === 404) {
         setError('Оружие не найдено. Попробуйте ещё раз.');
       } else {
+        console.error('Ошибка догадки:', err);
         setError('Произошла ошибка');
       }
     } finally {
@@ -103,119 +107,123 @@ const GameBoard = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Paper sx={{ p: 3, bgcolor: '#1a1a2e' }}>
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-          <Typography variant="h4" color="primary" component="h1">
-            Арсенал TF2
+    <>
+      <Header onMenuClick={() => setSidebarOpen(true)} />
+      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <Paper sx={{ p: 3, bgcolor: '#1a1a2e' }}>
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+            <Typography variant="h4" color="primary" component="h1">
+              Арсенал TF2
+            </Typography>
+            <Button
+              variant="contained"
+              onClick={startNewGame}
+              disabled={loading}
+            >
+              Новая игра
+            </Button>
+          </Box>
+
+          <Typography variant="subtitle1" sx={{ mb: 2 }}>
+            Осталось попыток: {remaining}
           </Typography>
-          <Button
-            variant="contained"
-            onClick={startNewGame}
-            disabled={loading}
-          >
-            Новая игра
-          </Button>
-        </Box>
 
-        <Typography variant="subtitle1" sx={{ mb: 2 }}>
-          Осталось попыток: {remaining}
-        </Typography>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
+              {error}
+            </Alert>
+          )}
 
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
-            {error}
-          </Alert>
-        )}
+          {gameOver && (
+            <Alert severity={result === 'win' ? 'success' : 'error'} sx={{ mb: 2 }}>
+              {result === 'win' ? '🎉 Поздравляем! Вы угадали!' : '😔 Попытки закончились. Загадано: ' + (session?.weapon_name || '')}
+            </Alert>
+          )}
 
-        {gameOver && (
-          <Alert severity={result === 'win' ? 'success' : 'error'} sx={{ mb: 2 }}>
-            {result === 'win' ? '🎉 Поздравляем! Вы угадали!' : '😔 Попытки закончились. Загадано: ' + (session?.weapon_name || '')}
-          </Alert>
-        )}
-
-        {/* Предложение войти после игры */}
-        <Snackbar
-          open={showLoginPrompt}
-          autoHideDuration={6000}
-          onClose={handleClosePrompt}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        >
-          <Alert 
-            severity="info" 
+          <Snackbar
+            open={showLoginPrompt}
+            autoHideDuration={6000}
             onClose={handleClosePrompt}
-            action={
-              <Button color="inherit" size="small" onClick={handleLoginRedirect}>
-                Войти
-              </Button>
-            }
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
           >
-            Хотите сохранить результат? Войдите в систему!
-          </Alert>
-        </Snackbar>
+            <Alert 
+              severity="info" 
+              onClose={handleClosePrompt}
+              action={
+                <Button color="inherit" size="small" onClick={handleLoginRedirect}>
+                  Войти
+                </Button>
+              }
+            >
+              Хотите сохранить результат? Войдите в систему!
+            </Alert>
+          </Snackbar>
 
-        <TableContainer component={Paper} sx={{ bgcolor: '#0d0d1a', mb: 3 }}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell sx={{ color: '#fff' }}>#</TableCell>
-                <TableCell sx={{ color: '#fff' }}>Класс</TableCell>
-                <TableCell sx={{ color: '#fff' }}>Слот</TableCell>
-                <TableCell sx={{ color: '#fff' }}>Магазин</TableCell>
-                <TableCell sx={{ color: '#fff' }}>Перезарядка</TableCell>
-                <TableCell sx={{ color: '#fff' }}>Год</TableCell>
-                <TableCell sx={{ color: '#fff' }}>Создатель</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {attempts.map((attempt) => (
-                <TableRow key={attempt.id}>
-                  <TableCell sx={{ color: '#fff' }}>{attempt.attempt_no}</TableCell>
-                  <TableCell sx={{ bgcolor: getColor(attempt.comparison_result.class.match), color: '#fff', fontWeight: 'bold' }}>
-                    {attempt.comparison_result.class.guessed.join(', ')}
-                  </TableCell>
-                  <TableCell sx={{ bgcolor: getColor(attempt.comparison_result.slot.match), color: '#fff', fontWeight: 'bold' }}>
-                    {attempt.comparison_result.slot.guessed}
-                  </TableCell>
-                  <TableCell sx={{ bgcolor: getColor(attempt.comparison_result.magazine.match), color: '#fff', fontWeight: 'bold' }}>
-                    {attempt.comparison_result.magazine.guessed ?? '—'}
-                  </TableCell>
-                  <TableCell sx={{ bgcolor: getColor(attempt.comparison_result.reload.match), color: '#fff', fontWeight: 'bold' }}>
-                    {attempt.comparison_result.reload.guessed}
-                  </TableCell>
-                  <TableCell sx={{ bgcolor: getColor(attempt.comparison_result.year.match), color: '#fff', fontWeight: 'bold' }}>
-                    {getYearDisplay(attempt.comparison_result.year)}
-                  </TableCell>
-                  <TableCell sx={{ bgcolor: getColor(attempt.comparison_result.creator.match), color: '#fff', fontWeight: 'bold' }}>
-                    {attempt.comparison_result.creator.guessed}
-                  </TableCell>
+          <TableContainer component={Paper} sx={{ bgcolor: '#0d0d1a', mb: 3 }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ color: '#fff' }}>#</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>Класс</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>Слот</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>Магазин</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>Перезарядка</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>Год</TableCell>
+                  <TableCell sx={{ color: '#fff' }}>Создатель</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              </TableHead>
+              <TableBody>
+                {attempts.map((attempt) => (
+                  <TableRow key={attempt.id}>
+                    <TableCell sx={{ color: '#fff' }}>{attempt.attempt_no}</TableCell>
+                    <TableCell sx={{ bgcolor: getColor(attempt.comparison_result.class.match), color: '#fff', fontWeight: 'bold' }}>
+                      {attempt.comparison_result.class.guessed.join(', ')}
+                    </TableCell>
+                    <TableCell sx={{ bgcolor: getColor(attempt.comparison_result.slot.match), color: '#fff', fontWeight: 'bold' }}>
+                      {attempt.comparison_result.slot.guessed}
+                    </TableCell>
+                    <TableCell sx={{ bgcolor: getColor(attempt.comparison_result.magazine.match), color: '#fff', fontWeight: 'bold' }}>
+                      {attempt.comparison_result.magazine.guessed ?? '—'}
+                    </TableCell>
+                    <TableCell sx={{ bgcolor: getColor(attempt.comparison_result.reload.match), color: '#fff', fontWeight: 'bold' }}>
+                      {attempt.comparison_result.reload.guessed}
+                    </TableCell>
+                    <TableCell sx={{ bgcolor: getColor(attempt.comparison_result.year.match), color: '#fff', fontWeight: 'bold' }}>
+                      {getYearDisplay(attempt.comparison_result.year)}
+                    </TableCell>
+                    <TableCell sx={{ bgcolor: getColor(attempt.comparison_result.creator.match), color: '#fff', fontWeight: 'bold' }}>
+                      {attempt.comparison_result.creator.guessed}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
 
-        <Box display="flex" gap={2}>
-          <TextField
-            fullWidth
-            label="Введите название оружия"
-            variant="outlined"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleGuess()}
-            disabled={gameOver || loading}
-            sx={{ bgcolor: '#0d0d1a', input: { color: '#fff' } }}
-          />
-          <Button
-            variant="contained"
-            onClick={handleGuess}
-            disabled={gameOver || loading || !input.trim()}
-          >
-            Отправить
-          </Button>
-        </Box>
-      </Paper>
-    </Container>
+          <Box display="flex" gap={2}>
+            <TextField
+              fullWidth
+              label="Введите название оружия"
+              variant="outlined"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleGuess()}
+              disabled={gameOver || loading}
+              sx={{ bgcolor: '#0d0d1a', input: { color: '#fff' } }}
+            />
+            <Button
+              variant="contained"
+              onClick={handleGuess}
+              disabled={gameOver || loading || !input.trim()}
+            >
+              Отправить
+            </Button>
+          </Box>
+        </Paper>
+      </Container>
+    </>
   );
 };
 

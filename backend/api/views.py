@@ -121,7 +121,9 @@ class GameSessionViewSet(viewsets.ModelViewSet):
 
         session.attempts_used += 1
 
-        is_correct = all(item.get('match') == 'exact' for item in comparison.values())
+        is_correct = all(item.get('match') in ['exact', 'partial'] 
+    for item in comparison.values()
+)
 
         if is_correct:
             session.result = 'win'

@@ -86,7 +86,7 @@ class WeaponWriteSerializer(serializers.ModelSerializer):
 
 class GameSessionSerializer(serializers.ModelSerializer):
     user_login = serializers.CharField(source='user.login', read_only=True)
-    weapon_name = serializers.CharField(source='weapon.name', read_only=True)
+    weapon_name = serializers.CharField(source='weapon.name_ru', read_only=True)
     attempts_left = serializers.IntegerField(read_only=True)
 
     class Meta:

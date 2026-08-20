@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+import { Box } from '@mui/material';  // ← импорт Box
 import PrivateRoute from './components/PrivateRoute';
 import GameBoard from './components/GameBoard';
 import Login from './components/Login';
@@ -10,6 +11,7 @@ import Statistics from './components/Statistics';
 import Leaderboard from './components/Leaderboard';
 import AdminPanel from './components/AdminPanel';
 import Profile from './components/Profile';
+import Footer from './components/Footer';
 import { AuthProvider } from './context/AuthContext';
 
 const darkTheme = createTheme({
@@ -27,26 +29,37 @@ function App() {
       <CssBaseline />
       <AuthProvider>
         <BrowserRouter>
-          <Routes>
-            {/* Открытые маршруты */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            
-            {/* Главная страница — доступна всем (гостям и авторизованным) */}
-            <Route path="/" element={<GameBoard />} />
-            
-            {/* Защищённые маршруты (только для авторизованных) */}
-            <Route element={<PrivateRoute />}>
-              <Route path="/statistics" element={<Statistics />} />
-              <Route path="/leaderboard" element={<Leaderboard />} />
-              <Route path="/profile" element={<Profile />} />
-            </Route>
-            
-            {/* Админка (только для администраторов) */}
-            <Route element={<PrivateRoute allowedRoles={['admin']} />}>
-              <Route path="/admin" element={<AdminPanel />} />
-            </Route>
-          </Routes>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              minHeight: '100vh',
+            }}
+          >
+            <Box sx={{ flex: 1 }}>
+              <Routes>
+                {/* Открытые маршруты */}
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                
+                {/* Главная страница */}
+                <Route path="/" element={<GameBoard />} />
+                
+                {/* Защищённые маршруты */}
+                <Route element={<PrivateRoute />}>
+                  <Route path="/statistics" element={<Statistics />} />
+                  <Route path="/leaderboard" element={<Leaderboard />} />
+                  <Route path="/profile" element={<Profile />} />
+                </Route>
+                
+                {/* Админка */}
+                <Route element={<PrivateRoute allowedRoles={['admin']} />}>
+                  <Route path="/admin" element={<AdminPanel />} />
+                </Route>
+              </Routes>
+            </Box>
+            <Footer />
+          </Box>
         </BrowserRouter>
       </AuthProvider>
     </ThemeProvider>

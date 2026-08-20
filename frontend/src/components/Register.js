@@ -1,10 +1,16 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Container, Paper, TextField, Button, Typography, Alert, Box } from '@mui/material';
+import { Container, Paper, TextField, Button, Typography, Alert, Box, Checkbox, FormControlLabel } from '@mui/material';
 import { useAuth } from '../context/AuthContext';
 
 const Register = () => {
-  const [form, setForm] = useState({ username: '', email: '', password: '', confirmPassword: '' });
+  const [form, setForm] = useState({
+    username: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    agreement: false
+  });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
@@ -13,6 +19,11 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    if (!form.agreement) {
+      setError('Необходимо согласие на обработку персональных данных');
+      return;
+    }
 
     if (form.password !== form.confirmPassword) {
       setError('Пароли не совпадают');
@@ -27,7 +38,7 @@ const Register = () => {
     setLoading(true);
 
     try {
-      await register(form.username, form.email, form.password);
+      await register(form.username, form.email, form.password, form.agreement);
       navigate('/login');
     } catch (err) {
       setError('Ошибка регистрации. Возможно, такой пользователь уже существует.');
@@ -90,6 +101,32 @@ const Register = () => {
             required
             sx={{ input: { color: '#fff' } }}
           />
+
+          {/* Чекбокс согласия */}
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={form.agreement}
+                onChange={(e) => setForm({ ...form, agreement: e.target.checked })}
+                sx={{ color: '#aaa' }}
+              />
+            }
+            label={
+              <Typography variant="body2" sx={{ color: '#aaa' }}>
+                Я согласен на обработку персональных данных в соответствии с{' '}
+                <a
+                  href="https://www.consultant.ru/document/cons_doc_LAW_61801/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: '#CF7336' }}
+                >
+                  152-ФЗ
+                </a>
+              </Typography>
+            }
+            sx={{ mt: 2, color: '#fff' }}
+          />
+
           <Button
             type="submit"
             fullWidth

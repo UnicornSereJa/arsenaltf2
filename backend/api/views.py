@@ -27,6 +27,27 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(request.user)
         return Response(serializer.data)
 
+    # Обновление профиля (логин, email)
+    @action(detail=False, methods=['put', 'patch'], permission_classes=[IsAuthenticated])
+    def update_profile(self, request):
+        user = request.user
+        serializer = UserSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
+
+    #  Удаление аккаунта
+    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
+    def delete_account(self, request):
+        user = request.user
+        # Проверка пароля
+        password = request.data.get('password')
+        if not user.check_password(password):
+             return Response({'error': 'Неверный пароль'}, status=400)
+        user.delete()
+        return Response({'message': 'Аккаунт успешно удалён'}, status=204)
+
 
 class WeaponViewSet(viewsets.ModelViewSet):
     queryset = Weapon.objects.filter(is_deleted=False)
@@ -166,7 +187,7 @@ class StatisticViewSet(viewsets.ViewSet):
         avg_attempts = sessions.aggregate(avg=Avg('attempts_used'))['avg'] or 0
 
         last_games = sessions.order_by('-finished_at')[:10].values(
-            'id', 'weapon__name', 'result', 'attempts_used', 'finished_at'
+            'id', 'weapon__name_ru', 'result', 'attempts_used', 'finished_at'
         )
 
         return Response({

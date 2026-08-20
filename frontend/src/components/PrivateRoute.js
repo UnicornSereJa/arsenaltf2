@@ -13,9 +13,15 @@ const PrivateRoute = ({ allowedRoles = [] }) => {
     return <Navigate to="/login" replace />;
   }
 
+  // Если маршрут требует определённых ролей
   if (allowedRoles.length > 0) {
-    // Проверка роли (если реализована)
-    if (!allowedRoles.includes(user.role)) {
+    // Проверяем, есть ли у пользователя is_staff
+    const hasAccess = allowedRoles.some(role => {
+      if (role === 'admin') return user.is_staff === true;
+      return user.role === role;
+    });
+    
+    if (!hasAccess) {
       return <Navigate to="/" replace />;
     }
   }

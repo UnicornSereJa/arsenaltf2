@@ -9,7 +9,6 @@ import api from '../api/axios';
 import Header from './Header';
 import Sidebar from './Sidebar';
 
-// Сопоставление кодов классов с русскими названиями
 const CLASS_NAMES = {
   'SCOUT': 'Разведчик',
   'SOLDIER': 'Солдат',
@@ -138,9 +137,42 @@ const GameBoard = () => {
     return guessedWeapon?.image_url || null;
   };
 
-  const getClassNames = (classCodes) => {
-    if (!classCodes || !Array.isArray(classCodes)) return '';
-    return classCodes.map(code => CLASS_NAMES[code] || code).join(', ');
+  const getClassNames = (classData) => {
+    console.log('🔍 Все попытки:', attempts);
+    if (!classData) return '—';
+    
+    // Если это массив
+    if (Array.isArray(classData)) {
+      if (classData.length === 0) return '—';
+      
+      // Если массив содержит объекты с полем name_ru или name
+      if (typeof classData[0] === 'object') {
+        return classData.map(item => item.name_ru || item.name || item).join(', ');
+      }
+      // Если массив содержит строки (коды)
+      return classData.map(code => CLASS_NAMES[code] || code).join(', ');
+    }
+    
+    // Если это строка — ищем в словаре
+    if (typeof classData === 'string') {
+      return CLASS_NAMES[classData] || classData;
+    }
+    
+    // Если это объект
+    if (typeof classData === 'object') {
+      if (classData.name_ru) return classData.name_ru;
+      if (classData.name) return classData.name;
+      
+      const values = Object.values(classData);
+      return values.map(v => {
+        if (typeof v === 'string') return CLASS_NAMES[v] || v;
+        if (v?.name_ru) return v.name_ru;
+        if (v?.name) return v.name;
+        return v;
+      }).join(', ');
+    }
+    
+    return '—';
   };
 
   return (

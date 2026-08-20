@@ -30,18 +30,25 @@ class WeaponCreatorSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'login', 'email', 'is_blocked', 'registered_at']
+        fields = ['id', 'login', 'email', 'is_blocked', 'registered_at', 'is_staff']
         read_only_fields = ['id', 'registered_at']
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)
+    agreement = serializers.BooleanField(write_only=True, required=True)
 
     class Meta:
         model = User
-        fields = ['id', 'login', 'email', 'password']
+        fields = ['id', 'login', 'email', 'password', 'agreement']
+
+    def validate_agreement(self, value):
+        if not value:
+            raise serializers.ValidationError('Необходимо согласие на обработку персональных данных')
+        return value
 
     def create(self, validated_data):
+        validated_data.pop('agreement')  # Убираем, т.к. его нет в модели
         validated_data['password_hash'] = make_password(validated_data.pop('password'))
         return super().create(validated_data)
 
@@ -114,3 +121,4 @@ class ComparisonResultSerializer(serializers.Serializer):
     reload = serializers.DictField()
     year = serializers.DictField()
     creator = serializers.DictField()
+

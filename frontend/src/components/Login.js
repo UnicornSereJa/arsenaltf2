@@ -4,11 +4,11 @@ import { Container, Paper, TextField, Button, Typography, Alert, Box } from '@mu
 import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
-  const [login, setLogin] = useState('');       // ← было email, стало login
+  const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login: loginUser } = useAuth();        // ← переименовали, чтобы не конфликтовать
+  const { login: loginUser } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -17,7 +17,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      await loginUser(login, password);          // ← передаём login
+      await loginUser(login, password);
       navigate('/');
     } catch (err) {
       setError('Неверный логин или пароль');
@@ -27,8 +27,22 @@ const Login = () => {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 8 }}>
+    <Container maxWidth="sm" sx={{ mt: 4 }}>
       <Paper sx={{ p: 4, bgcolor: '#1a1a2e' }}>
+        {/* Логотип на странице входа */}
+        <Box display="flex" justifyContent="center" mb={2}>
+          <img 
+            src="/images/arsenal_logo_big1.png" 
+            alt="Арсенал TF2" 
+            style={{ 
+              width: '100%', 
+              maxWidth: '350px', 
+              height: 'auto',
+              borderRadius: '8px'
+            }}
+          />
+        </Box>
+
         <Typography variant="h4" component="h1" sx={{ mb: 3, textAlign: 'center' }}>
           Вход в систему
         </Typography>
@@ -42,8 +56,8 @@ const Login = () => {
         <form onSubmit={handleSubmit}>
           <TextField
             fullWidth
-            label="Логин"                         // ← было "Email"
-            type="text"                           // ← было "email"
+            label="Логин"
+            type="text"
             value={login}
             onChange={(e) => setLogin(e.target.value)}
             margin="normal"

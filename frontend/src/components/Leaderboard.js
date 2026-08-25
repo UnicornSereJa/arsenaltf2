@@ -36,7 +36,21 @@ const Leaderboard = () => {
       
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <Paper sx={{ p: 3, bgcolor: '#1a1a2e' }}>
-          <Typography variant="h4" color="primary" component="h1" sx={{ mb: 3 }}>
+          {/* Логотип на странице рейтинга */}
+          <Box display="flex" justifyContent="center" mb={2}>
+            <img 
+              src="/images/arsenal_logo_big1.png" 
+              alt="Арсенал TF2" 
+              style={{ 
+                width: '100%', 
+                maxWidth: '350px', 
+                height: 'auto',
+                borderRadius: '8px'
+              }}
+            />
+          </Box>
+
+          <Typography variant="h4" color="primary" component="h1" sx={{ mb: 3, textAlign: 'center' }}>
             🏆 Рейтинг игроков
           </Typography>
 
@@ -54,7 +68,7 @@ const Leaderboard = () => {
 
           {!loading && !error && (
             <>
-              <Typography variant="body2" sx={{ color: '#aaa', mb: 2 }}>
+              <Typography variant="body2" sx={{ color: '#aaa', mb: 2, textAlign: 'center' }}>
                 Топ-10 игроков по проценту побед (минимум 5 игр)
               </Typography>
 

@@ -22,9 +22,19 @@ const Sidebar = ({ open, onClose }) => {
   return (
     <Drawer anchor="left" open={open} onClose={onClose}>
       <Box sx={{ width: 250, p: 2, bgcolor: '#1a1a2e', height: '100%' }}>
-        <Typography variant="h6" sx={{ color: '#CF7336', mb: 2 }}>
-          Арсенал TF2
-        </Typography>
+        {/* Логотип в сайдбаре */}
+        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+          <img 
+            src="/images/arsenal_logo.png" 
+            alt="Арсенал TF2" 
+            style={{ 
+              width: '100%', 
+              maxWidth: '200px', 
+              height: 'auto',
+              borderRadius: '4px'
+            }}
+          />
+        </Box>
 
         <Divider sx={{ bgcolor: '#2a2a4a' }} />
 

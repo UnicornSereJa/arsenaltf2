@@ -21,12 +21,18 @@ const Footer = () => {
     >
       <Container maxWidth="lg">
         <Grid container spacing={4} justifyContent="space-between">
-          {/* Левая колонка — информация о проекте */}
+          {/* Левая колонка — информация о проекте с логотипом */}
           <Grid item xs={12} md={4}>
-            <Typography variant="h6" sx={{ color: '#CF7336', mb: 1 }}>
-              Арсенал TF2
-            </Typography>
-            <Typography variant="body2" sx={{ color: '#888' }}>
+            <img 
+              src="/images/arsenal_logo.png" 
+              alt="Арсенал TF2" 
+              style={{ 
+                width: '150px', 
+                height: 'auto',
+                marginBottom: '8px'
+              }}
+            />
+            <Typography variant="body2" sx={{ color: '#888', mt: 1 }}>
               Игра-головоломка по мотивам Team Fortress 2.
               Угадай оружие по характеристикам за 6 попыток!
             </Typography>

@@ -141,28 +141,21 @@ const GameBoard = () => {
     console.log('🔍 Все попытки:', attempts);
     if (!classData) return '—';
     
-    // Если это массив
     if (Array.isArray(classData)) {
       if (classData.length === 0) return '—';
-      
-      // Если массив содержит объекты с полем name_ru или name
       if (typeof classData[0] === 'object') {
         return classData.map(item => item.name_ru || item.name || item).join(', ');
       }
-      // Если массив содержит строки (коды)
       return classData.map(code => CLASS_NAMES[code] || code).join(', ');
     }
     
-    // Если это строка — ищем в словаре
     if (typeof classData === 'string') {
       return CLASS_NAMES[classData] || classData;
     }
     
-    // Если это объект
     if (typeof classData === 'object') {
       if (classData.name_ru) return classData.name_ru;
       if (classData.name) return classData.name;
-      
       const values = Object.values(classData);
       return values.map(v => {
         if (typeof v === 'string') return CLASS_NAMES[v] || v;
@@ -183,13 +176,24 @@ const GameBoard = () => {
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <Paper sx={{ p: 3, bgcolor: '#1a1a2e' }}>
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-            <Typography variant="h4" color="primary" component="h1">
-              Арсенал TF2
-            </Typography>
+            {/* Большой логотип вместо заголовка */}
+            <Box display="flex" justifyContent="center" flex={1}>
+              <img 
+                src="/images/arsenal_logo_big1.png" 
+                alt="Арсенал TF2" 
+                style={{ 
+                  width: '100%', 
+                  maxWidth: '150px', 
+                  height: 'auto',
+                  borderRadius: '8px'
+                }}
+              />
+            </Box>
             <Button
               variant="contained"
               onClick={startNewGame}
               disabled={loading}
+              sx={{ ml: 2 }}
             >
               Новая игра
             </Button>

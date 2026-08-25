@@ -47,7 +47,6 @@ const Statistics = () => {
     fetchStats();
   }, [navigate]);
 
-  // Подготовка данных для графика побед/поражений
   const getPieData = () => {
     if (!stats) return [];
     return [
@@ -56,7 +55,6 @@ const Statistics = () => {
     ];
   };
 
-  // Подготовка данных для графика попыток (последние 10 игр)
   const getAttemptsData = () => {
     if (!stats || !stats.last_games) return [];
     return stats.last_games.map((game, index) => ({
@@ -127,9 +125,19 @@ const Statistics = () => {
       
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <Paper sx={{ p: 3, bgcolor: '#1a1a2e' }}>
-          <Typography variant="h4" color="primary" component="h1" sx={{ mb: 3 }}>
-            📊 Статистика
-          </Typography>
+          {/* Логотип на странице статистики */}
+          <Box display="flex" justifyContent="center" mb={3}>
+            <img 
+              src="/images/arsenal_logo_big1.png" 
+              alt="Арсенал TF2" 
+              style={{ 
+                width: '100%', 
+                maxWidth: '400px', 
+                height: 'auto',
+                borderRadius: '8px'
+              }}
+            />
+          </Box>
 
           {/* Карточки с цифрами */}
           <Grid container spacing={3} sx={{ mb: 4 }}>
@@ -167,9 +175,8 @@ const Statistics = () => {
             </Grid>
           </Grid>
 
-          {/* Графики (между карточками и историей) */}
+          {/* Графики */}
           <Grid container spacing={3} sx={{ mb: 3 }}>
-            {/* Круговая диаграмма: Победы / Поражения */}
             <Grid item xs={12} md={6}>
               <Paper sx={{ p: 2, bgcolor: '#0d0d1a' }}>
                 <Typography variant="h6" color="#fff" sx={{ mb: 2, textAlign: 'center' }}>
@@ -198,7 +205,6 @@ const Statistics = () => {
               </Paper>
             </Grid>
 
-            {/* Гистограмма: Попытки по играм */}
             <Grid item xs={12} md={6}>
               <Paper sx={{ p: 2, bgcolor: '#0d0d1a' }}>
                 <Typography variant="h6" color="#fff" sx={{ mb: 2, textAlign: 'center' }}>
@@ -210,7 +216,6 @@ const Statistics = () => {
                     <XAxis dataKey="name" stroke="#aaa" />
                     <YAxis stroke="#aaa" />
                     <Tooltip />
-                    {/* <Legend /> */}  {/* ← Убрали */}
                     <Bar dataKey="Попытки" fill="#CF7336">
                       {attemptsData.map((entry, index) => (
                         <Cell 

@@ -48,8 +48,22 @@ const Register = () => {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 8 }}>
+    <Container maxWidth="sm" sx={{ mt: 4 }}>
       <Paper sx={{ p: 4, bgcolor: '#1a1a2e' }}>
+        {/* Логотип на странице регистрации */}
+        <Box display="flex" justifyContent="center" mb={2}>
+          <img 
+            src="/images/arsenal_logo_big1.png" 
+            alt="Арсенал TF2" 
+            style={{ 
+              width: '100%', 
+              maxWidth: '350px', 
+              height: 'auto',
+              borderRadius: '8px'
+            }}
+          />
+        </Box>
+
         <Typography variant="h4" component="h1" sx={{ mb: 3, textAlign: 'center' }}>
           Регистрация
         </Typography>
@@ -102,7 +116,6 @@ const Register = () => {
             sx={{ input: { color: '#fff' } }}
           />
 
-          {/* Чекбокс согласия */}
           <FormControlLabel
             control={
               <Checkbox

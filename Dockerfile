@@ -32,5 +32,9 @@ COPY --from=backend /app /app
 # Копируем собранный фронтенд
 COPY --from=frontend /app/build /app/frontend/build
 
-# Применяем миграции при старте контейнера
-CMD ["sh", "-c", "python manage.py migrate && python manage.py createsuperuser --noinput || true && gunicorn --bind 0.0.0.0:8000 backend.wsgi:application"]
+# Копируем скрипт запуска и даём права
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
+EXPOSE 8000
+ENTRYPOINT ["/docker-entrypoint.sh"]

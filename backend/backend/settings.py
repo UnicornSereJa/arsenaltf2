@@ -1,4 +1,5 @@
 import os
+import re
 import dj_database_url
 from pathlib import Path
 from dotenv import load_dotenv
@@ -55,16 +56,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-# ===== НАСТРОЙКА БАЗЫ ДАННЫХ (для PostgreSQL) =====
-# Используем DATABASE_URL, которую RelaxDev подставляет автоматически
+# ===== НАСТРОЙКА БАЗЫ ДАННЫХ =====
+# Удаляем параметры connection_limit, pool_timeout, connect_timeout из DATABASE_URL
 DATABASE_URL = os.getenv('DATABASE_URL')
 if DATABASE_URL:
-    # Parse the DATABASE_URL into Django's DATABASES dict
+    # Удаляем всё, что идёт после ? (включая connection_limit, pool_timeout, connect_timeout)
+    clean_database_url = re.sub(r'\?.*$', '', DATABASE_URL)
     DATABASES = {
-        'default': dj_database_url.config(default=DATABASE_URL, conn_max_age=600, ssl_require=True)
+        'default': dj_database_url.config(default=clean_database_url, conn_max_age=600, ssl_require=True)
     }
 else:
-    # Для локальной разработки — SQLite
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -101,8 +102,7 @@ REST_FRAMEWORK = {
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'http://127.0.0.1:3000',
-    # Добавьте URL вашего приложения на RelaxDev
-    # 'https://ваш-проект.relaxdev.ru',
+    'https://arsenaltf2.relaxdev.ru',  # Добавьте URL вашего приложения на RelaxDev
 ]
 
 CORS_ALLOW_CREDENTIALS = True

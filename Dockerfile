@@ -33,4 +33,4 @@ COPY --from=backend /app /app
 COPY --from=frontend /app/build /app/frontend/build
 
 EXPOSE ${PORT}
-CMD gunicorn --bind 0.0.0.0:${PORT} backend.wsgi:application
+CMD gunicorn --bind 0.0.0.0:${PORT:-8000} backend.wsgi:application

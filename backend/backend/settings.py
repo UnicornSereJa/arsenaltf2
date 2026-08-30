@@ -139,3 +139,8 @@ AUTHENTICATION_BACKENDS = [
     'api.backends.LoginBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://arsenaltf2.relaxdev.ru',
+    'http://arsenaltf2.relaxdev.ru',
+]

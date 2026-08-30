@@ -36,5 +36,5 @@ COPY --from=frontend /app/build /app/frontend/build
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
-EXPOSE ${PORT:-8080}
-CMD gunicorn --bind 0.0.0.0:${PORT:-8080} backend.wsgi:application
+EXPOSE 8000
+ENTRYPOINT ["/docker-entrypoint.sh"]

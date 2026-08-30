@@ -79,9 +79,7 @@ if DATABASE_URL:
             'HOST': db_host,
             'PORT': db_port,
             'CONN_MAX_AGE': 600,
-            'OPTIONS': {
-                'sslmode': 'require',
-            },
+            'OPTIONS': {},
         }
     }
 else:

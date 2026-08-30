@@ -1,4 +1,5 @@
 import os
+import dj_database_url
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -54,33 +55,20 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-# ===== НАСТРОЙКА БАЗЫ ДАННЫХ (гибкая) =====
-# Позволяет использовать SQLite при сборке (collectstatic) и MySQL/PostgreSQL в рантайме
-import dj_database_url
-
-# Если задана DATABASE_URL (например, на RelaxDev) — используем её
+# ===== НАСТРОЙКА БАЗЫ ДАННЫХ (для PostgreSQL) =====
+# Используем DATABASE_URL, которую RelaxDev подставляет автоматически
 DATABASE_URL = os.getenv('DATABASE_URL')
 if DATABASE_URL:
+    # Parse the DATABASE_URL into Django's DATABASES dict
     DATABASES = {
-        'default': dj_database_url.config(default=DATABASE_URL, conn_max_age=600)
+        'default': dj_database_url.config(default=DATABASE_URL, conn_max_age=600, ssl_require=True)
     }
 else:
-    # Иначе — используем настройки из переменных окружения или SQLite по умолчанию
-    DB_ENGINE = os.getenv('DB_ENGINE', 'django.db.backends.sqlite3')
-    DB_NAME = os.getenv('DB_NAME', 'db.sqlite3')
-    DB_USER = os.getenv('DB_USER', '')
-    DB_PASSWORD = os.getenv('DB_PASSWORD', '')
-    DB_HOST = os.getenv('DB_HOST', '')
-    DB_PORT = os.getenv('DB_PORT', '')
-
+    # Для локальной разработки — SQLite
     DATABASES = {
         'default': {
-            'ENGINE': DB_ENGINE,
-            'NAME': DB_NAME,
-            'USER': DB_USER,
-            'PASSWORD': DB_PASSWORD,
-            'HOST': DB_HOST,
-            'PORT': DB_PORT,
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
 

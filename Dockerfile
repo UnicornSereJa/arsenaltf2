@@ -22,7 +22,7 @@ RUN npm run build
 FROM python:3.10-slim
 WORKDIR /app
 
-# Копируем requirements.txt и устанавливаем зависимости в финальном образе
+# Устанавливаем зависимости в финальном образе
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
@@ -32,5 +32,5 @@ COPY --from=backend /app /app
 # Копируем собранный фронтенд
 COPY --from=frontend /app/build /app/frontend/build
 
-EXPOSE 8000
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "backend.wsgi:application"]
+# Применяем миграции при старте контейнера
+CMD ["sh", "-c", "python manage.py migrate && python manage.py createsuperuser --noinput || true && gunicorn --bind 0.0.0.0:8000 backend.wsgi:application"]

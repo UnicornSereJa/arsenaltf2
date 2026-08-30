@@ -54,20 +54,35 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-# ===== ТВОЯ ВЕРСИЯ (MySQL) =====
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'arsenaltf2',
-        'USER': 'root',
-        'PASSWORD': 'Serg913420698!',
-        'HOST': 'localhost',
-        'PORT': '3306',
-        'OPTIONS': {
-            'charset': 'utf8mb4',
-        },
+# ===== НАСТРОЙКА БАЗЫ ДАННЫХ (гибкая) =====
+# Позволяет использовать SQLite при сборке (collectstatic) и MySQL/PostgreSQL в рантайме
+import dj_database_url
+
+# Если задана DATABASE_URL (например, на RelaxDev) — используем её
+DATABASE_URL = os.getenv('DATABASE_URL')
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.config(default=DATABASE_URL, conn_max_age=600)
     }
-}
+else:
+    # Иначе — используем настройки из переменных окружения или SQLite по умолчанию
+    DB_ENGINE = os.getenv('DB_ENGINE', 'django.db.backends.sqlite3')
+    DB_NAME = os.getenv('DB_NAME', 'db.sqlite3')
+    DB_USER = os.getenv('DB_USER', '')
+    DB_PASSWORD = os.getenv('DB_PASSWORD', '')
+    DB_HOST = os.getenv('DB_HOST', '')
+    DB_PORT = os.getenv('DB_PORT', '')
+
+    DATABASES = {
+        'default': {
+            'ENGINE': DB_ENGINE,
+            'NAME': DB_NAME,
+            'USER': DB_USER,
+            'PASSWORD': DB_PASSWORD,
+            'HOST': DB_HOST,
+            'PORT': DB_PORT,
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -98,6 +113,8 @@ REST_FRAMEWORK = {
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'http://127.0.0.1:3000',
+    # Добавьте URL вашего приложения на RelaxDev
+    # 'https://ваш-проект.relaxdev.ru',
 ]
 
 CORS_ALLOW_CREDENTIALS = True

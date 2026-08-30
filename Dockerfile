@@ -4,6 +4,10 @@ WORKDIR /app
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/ .
+
+# Сборка статики с SQLite
+ENV DB_ENGINE=django.db.backends.sqlite3
+ENV DB_NAME=/tmp/db.sqlite3
 RUN python manage.py collectstatic --noinput
 
 # Фронтенд

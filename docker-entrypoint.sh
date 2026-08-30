@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+echo "Making migrations..."
+python manage.py makemigrations api --noinput
+
 echo "Applying database migrations..."
 python manage.py migrate --noinput
 

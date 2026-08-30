@@ -1,7 +1,7 @@
 import os
 import re
-import dj_database_url
 from pathlib import Path
+from urllib.parse import urlparse
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -56,14 +56,33 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-# ===== НАСТРОЙКА БАЗЫ ДАННЫХ =====
-# Удаляем параметры connection_limit, pool_timeout, connect_timeout из DATABASE_URL
+# ===== НАСТРОЙКА БАЗЫ ДАННЫХ (ручной парсинг) =====
 DATABASE_URL = os.getenv('DATABASE_URL')
 if DATABASE_URL:
-    # Удаляем всё, что идёт после ? (включая connection_limit, pool_timeout, connect_timeout)
+    # Удаляем все параметры после ? (connection_limit, pool_timeout, connect_timeout)
     clean_database_url = re.sub(r'\?.*$', '', DATABASE_URL)
+    
+    # Парсим URL вручную
+    url = urlparse(clean_database_url)
+    db_name = url.path[1:]  # убираем первый слеш
+    db_user = url.username
+    db_password = url.password
+    db_host = url.hostname
+    db_port = url.port or 5432
+    
     DATABASES = {
-        'default': dj_database_url.config(default=clean_database_url, conn_max_age=600, ssl_require=True)
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': db_name,
+            'USER': db_user,
+            'PASSWORD': db_password,
+            'HOST': db_host,
+            'PORT': db_port,
+            'CONN_MAX_AGE': 600,
+            'OPTIONS': {
+                'sslmode': 'require',
+            },
+        }
     }
 else:
     DATABASES = {
@@ -102,7 +121,7 @@ REST_FRAMEWORK = {
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'http://127.0.0.1:3000',
-    'https://arsenaltf2.relaxdev.ru',  # Добавьте URL вашего приложения на RelaxDev
+    'https://arsenaltf2.relaxdev.ru',
 ]
 
 CORS_ALLOW_CREDENTIALS = True

@@ -27,6 +27,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # ← Добавить!
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -59,12 +60,9 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # ===== НАСТРОЙКА БАЗЫ ДАННЫХ (ручной парсинг) =====
 DATABASE_URL = os.getenv('DATABASE_URL')
 if DATABASE_URL:
-    # Удаляем все параметры после ? (connection_limit, pool_timeout, connect_timeout)
     clean_database_url = re.sub(r'\?.*$', '', DATABASE_URL)
-    
-    # Парсим URL вручную
     url = urlparse(clean_database_url)
-    db_name = url.path[1:]  # убираем первый слеш
+    db_name = url.path[1:]
     db_user = url.username
     db_password = url.password
     db_host = url.hostname
@@ -102,8 +100,17 @@ TIME_ZONE = 'Europe/Moscow'
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = 'static/'
+# ===== СТАТИЧЕСКИЕ ФАЙЛЫ =====
+STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Добавляем папку со статикой React
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'frontend/build/static'),
+]
+
+# Используем whitenoise для продакшена
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

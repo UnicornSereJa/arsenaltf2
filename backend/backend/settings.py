@@ -107,6 +107,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # Добавляем папку со статикой React
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'frontend/build/static'),
+    os.path.join(BASE_DIR, 'frontend/public'),
 ]
 
 # Используем whitenoise для продакшена

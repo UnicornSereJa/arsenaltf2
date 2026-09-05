@@ -1,7 +1,12 @@
 import axios from 'axios';
 
+// Определяем базовый URL в зависимости от окружения
+const baseURL = process.env.NODE_ENV === 'production' 
+  ? 'https://arsenaltf2.relaxdev.ru/api'
+  : 'http://127.0.0.1:8000/api';
+
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api',
+  baseURL: baseURL,
   timeout: 10000,
 });
 

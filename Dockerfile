@@ -31,6 +31,7 @@ COPY --from=backend /app /app
 
 # Копируем собранный фронтенд
 COPY --from=frontend /app/build /app/frontend/build
+COPY --from=frontend /app/public /app/frontend/public
 
 # Копируем скрипт запуска и даём права
 COPY docker-entrypoint.sh /docker-entrypoint.sh

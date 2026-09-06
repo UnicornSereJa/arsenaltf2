@@ -2,7 +2,8 @@ import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import { Box } from '@mui/material';  // ← импорт Box
+import { Box } from '@mui/material';
+import { MetrikaCounter } from 'react-metrika';  // ← импорт Метрики
 import PrivateRoute from './components/PrivateRoute';
 import GameBoard from './components/GameBoard';
 import Login from './components/Login';
@@ -38,21 +39,14 @@ function App() {
           >
             <Box sx={{ flex: 1 }}>
               <Routes>
-                {/* Открытые маршруты */}
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
-                
-                {/* Главная страница */}
                 <Route path="/" element={<GameBoard />} />
-                
-                {/* Защищённые маршруты */}
                 <Route element={<PrivateRoute />}>
                   <Route path="/statistics" element={<Statistics />} />
                   <Route path="/leaderboard" element={<Leaderboard />} />
                   <Route path="/profile" element={<Profile />} />
                 </Route>
-                
-                {/* Админка */}
                 <Route element={<PrivateRoute allowedRoles={['admin']} />}>
                   <Route path="/admin" element={<AdminPanel />} />
                 </Route>
@@ -62,6 +56,18 @@ function App() {
           </Box>
         </BrowserRouter>
       </AuthProvider>
+
+      {/* Яндекс Метрика */}
+      <MetrikaCounter
+        id={112324203}  // ← ваш ID счётчика
+        options={{
+          webvisor: true,
+          clickmap: true,
+          trackLinks: true,
+          accurateTrackBounce: true,
+          trackHash: true,  // ← обязательно для SPA
+        }}
+      />
     </ThemeProvider>
   );
 }

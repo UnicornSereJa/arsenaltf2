@@ -59,7 +59,7 @@ function App() {
 
       {/* Яндекс Метрика */}
       <MetrikaCounter
-        id={112324203}  // ← ваш ID счётчика
+        id={112324203}  // ← ID счётчика
         options={{
           webvisor: true,
           clickmap: true,

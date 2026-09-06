@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { Box } from '@mui/material';
-import { MetrikaCounter } from 'react-metrika';  // ← импорт Метрики
 import PrivateRoute from './components/PrivateRoute';
 import GameBoard from './components/GameBoard';
 import Login from './components/Login';
@@ -56,18 +55,6 @@ function App() {
           </Box>
         </BrowserRouter>
       </AuthProvider>
-
-      {/* Яндекс Метрика */}
-      <MetrikaCounter
-        id={112324203}  // ← ID счётчика
-        options={{
-          webvisor: true,
-          clickmap: true,
-          trackLinks: true,
-          accurateTrackBounce: true,
-          trackHash: true,  // ← обязательно для SPA
-        }}
-      />
     </ThemeProvider>
   );
 }
